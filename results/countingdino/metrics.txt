@@ -1,0 +1,10 @@
+CountingDINO on TPC-268 (700 images)
+==================================================
+MAE:  36.8131
+RMSE: 86.8978
+R2:   -0.2984
+rMAE: 0.5598
+rRMSE:1.3214
+FLOPS:2130.08 GFLOPs (estimated)
+Mean_GT:  65.7600
+Mean_Pred:70.1955

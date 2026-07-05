@@ -1,0 +1,6 @@
+pandas>=1.3.0
+pulp>=2.6.0
+opencv-python>=4.5.0
+numpy>=1.21.0
+torch>=1.10.0
+Pillow>=8.0.0

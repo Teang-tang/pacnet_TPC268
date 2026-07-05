@@ -1,0 +1,13 @@
+CountGD on TPC-268
+==================================================
+Samples: 700
+Confidence threshold: 0.23
+Prompt: per-image organ name
+------------------------------
+MAE: 26.0971
+RMSE: 59.1928
+R2: 0.3973
+rMAE: 0.3967
+rRMSE: 0.8997
+Mean_GT: 65.7914
+Mean_Pred: 49.8857

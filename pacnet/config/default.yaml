@@ -1,0 +1,26 @@
+﻿# PACNet Default Configuration
+# Plant-Adaptive Counting Network
+
+model:
+  name: PACNet
+  backbone: resnet50_fpn
+  pretrained_backbone: true
+  image_size: 384
+  
+training:
+  epochs: 50
+  batch_size: 8
+  learning_rate: 0.0001
+  weight_decay: 0.0001
+  num_workers: 4
+  seed: 42
+  
+loss:
+  lambda_count: 0.1
+  lambda_local: 0.05
+  lambda_mse: 1.0
+
+evaluation:
+  num_images: 100
+  multi_scale: false
+  scales: [0.75, 1.0, 1.25]

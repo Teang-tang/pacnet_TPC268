@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>多模态植物计数系统</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:opsz@14..32&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f7fa;--card:#fff;--primary:#2563eb;--primary-hover:#1d4ed8;--text:#1e293b;--text2:#64748b;--border:#e2e8f0;--radius:12px;--shadow:0 1px 3px rgba(0,0,0,.08),0 1px 2px rgba(0,0,0,.06)}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.header{background:linear-gradient(135deg,#1e3a5f 0%,#2563eb 100%);color:#fff;padding:32px 24px;text-align:center}
+.header h1{font-size:28px;font-weight:600;margin-bottom:6px}
+.header p{font-size:14px;opacity:.85}
+.container{max-width:960px;margin:0 auto;padding:24px 16px}
+.card{background:var(--card);border-radius:var(--radius);box-shadow:var(--shadow);padding:24px;margin-bottom:20px}
+.card-title{font-size:16px;font-weight:600;margin-bottom:16px;color:var(--text)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:13px;font-weight:500;margin-bottom:6px;color:var(--text2)}
+.form-group select,.form-group input{width:100%;padding:10px 14px;border:1px solid var(--border);border-radius:8px;font-size:14px;font-family:inherit;background:#fff;transition:border-color .2s}
+.form-group select:focus,.form-group input:focus{outline:none;border-color:var(--primary)}
+.upload-zone{border:2px dashed var(--border);border-radius:var(--radius);padding:40px 20px;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:16px}
+.upload-zone:hover,.upload-zone.dragover{border-color:var(--primary);background:#f0f4ff}
+.upload-zone.has-image{padding:16px;border-style:solid;border-color:var(--primary)}
+.upload-zone img{max-width:100%;max-height:300px;border-radius:8px;display:block;margin:0 auto}
+.upload-icon{font-size:40px;margin-bottom:12px;opacity:.4}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 24px;border:none;border-radius:8px;font-size:15px;font-weight:500;font-family:inherit;cursor:pointer;transition:all .2s}
+.btn-primary{background:var(--primary);color:#fff}
+.btn-primary:hover{background:var(--primary-hover)}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{background:var(--border);color:var(--text)}
+.btn-secondary:hover{background:#cbd5e1}
+.result-box{text-align:center;padding:20px}
+.result-count{font-size:48px;font-weight:700;color:var(--primary);line-height:1.2}
+.result-label{font-size:13px;color:var(--text2);margin-top:4px}
+.result-meta{display:flex;justify-content:center;gap:24px;margin-top:16px;font-size:12px;color:var(--text2)}
+.result-vis img{max-width:100%;border-radius:8px;margin-top:12px}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px}
+.status-loaded{background:#22c55e}
+.status-missing{background:#f59e0b}
+.status-error{background:#ef4444}
+.model-status{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.model-status-item{display:flex;align-items:center;gap:6px;font-size:12px;padding:6px 12px;background:#f8fafc;border-radius:6px}
+.error-msg{color:#ef4444;font-size:13px;margin-top:8px}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#1e293b;color:#fff;padding:12px 24px;border-radius:8px;font-size:14px;z-index:100;opacity:0;transition:opacity .3s}
+.toast.show{opacity:1}
+@media(max-width:640px){.grid-2{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="header"><h1>多模态植物计数系统</h1><p>Modal Plant Counting — 支持 CLIP-Count · CountingDINO · CountGD · PACNet</p></div>
+<div class="container">
+
+<div class="card"><div class="card-title">模型状态</div><div class="model-status" id="modelStatus"><span style="color:var(--text2)">正在检测...</span></div></div>
+
+<div class="card"><div class="card-title">上传图像并计数</div>
+<div class="grid-2">
+<div>
+<div class="upload-zone" id="uploadZone" onclick="document.getElementById('fileInput').click()">
+<div id="uploadPlaceholder"><div class="upload-icon">+</div><p style="font-size:14px;color:var(--text2)">点击上传植物图像</p><p style="font-size:12px;color:var(--text2);margin-top:4px">支持 JPG / PNG</p></div>
+<img id="previewImg" style="display:none" alt="Preview">
+</div>
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+<div class="form-group"><label>计数模型</label><select id="modelSelect"><option>CLIP-Count</option><option>CountingDINO</option><option>CountGD</option><option>PACNet</option></select></div>
+<div class="form-group"><label>文本提示（可选）</label><input id="promptInput" placeholder="例如: leaf, flower, fruit, seed" value="leaf"></div>
+<button class="btn btn-primary" id="countBtn" onclick="predict()">计数</button>
+</div>
+<div>
+<div class="card" style="box-shadow:none;border:1px solid var(--border);margin-bottom:0"><div class="card-title" style="margin-bottom:8px">结果</div>
+<div class="result-box" id="resultBox">
+<div class="result-count" id="resultCount">—</div>
+<div class="result-label">预测计数 (Predicted Count)</div>
+<div class="result-meta"><span id="resultModel">模型: —</span><span id="resultTime">耗时: —</span><span id="resultPrompt">提示: —</span></div>
+</div>
+<div class="result-vis" id="resultVis" style="display:none"></div>
+<div class="error-msg" id="errorMsg" style="display:none"></div>
+</div></div></div></div>
+
+<div class="card"><div class="card-title">快速说明</div>
+<table style="width:100%;font-size:13px;border-collapse:collapse">
+<tr style="border-bottom:1px solid var(--border)"><th style="text-align:left;padding:8px 4px">模型</th><th style="text-align:left;padding:8px 4px">范式</th><th style="text-align:left;padding:8px 4px">当前状态</th></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px">CLIP-Count</td><td style="padding:8px 4px">文本引导密度图回归</td><td style="padding:8px 4px" id="s0">检测中...</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px">CountingDINO</td><td style="padding:8px 4px">样例引导特征匹配</td><td style="padding:8px 4px" id="s1">检测中...</td></tr>
+<tr style="border-bottom:1px solid var(--border)"><td style="padding:8px 4px">CountGD</td><td style="padding:8px 4px">开放词汇检测+分割</td><td style="padding:8px 4px" id="s2">检测中...</td></tr>
+<tr><td style="padding:8px 4px">PACNet</td><td style="padding:8px 4px">多尺度自适应密度网络</td><td style="padding:8px 4px" id="s3">检测中...</td></tr>
+</table>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const MODELS = ["CLIP-Count","CountingDINO","CountGD","PACNet"];
+let selectedFile = null;
+
+document.getElementById("fileInput").addEventListener("change", function(e) {
+    if (e.target.files.length) showPreview(e.target.files[0]);
+});
+document.getElementById("uploadZone").addEventListener("dragover", function(e) {
+    e.preventDefault(); this.classList.add("dragover");
+});
+document.getElementById("uploadZone").addEventListener("dragleave", function() {
+    this.classList.remove("dragover");
+});
+document.getElementById("uploadZone").addEventListener("drop", function(e) {
+    e.preventDefault(); this.classList.remove("dragover");
+    if (e.dataTransfer.files.length) showPreview(e.dataTransfer.files[0]);
+});
+function showPreview(file) {
+    selectedFile = file;
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        document.getElementById("previewImg").src = e.target.result;
+        document.getElementById("previewImg").style.display = "block";
+        document.getElementById("uploadPlaceholder").style.display = "none";
+        document.getElementById("uploadZone").classList.add("has-image");
+    };
+    reader.readAsDataURL(file);
+}
+
+async function checkStatus() {
+    try {
+        const res = await fetch("/api/status");
+        const data = await res.json();
+        const names = ["CLIP-Count","CountingDINO","CountGD","PACNet"];
+        const statuses = [data.models["CLIP-Count"],"not_implemented","not_implemented",data.models["PACNet"]];
+        const labels = ["s0","s1","s2","s3"];
+        const statusHtml = [];
+        for (let i = 0; i < names.length; i++) {
+            let cls = "status-error", txt = statuses[i] || "error";
+            if (statuses[i] === "loaded") { cls = "status-loaded"; txt = "已加载"; }
+            else if (statuses[i] === "weights_missing" || statuses[i] === "not_implemented") { cls = "status-missing"; txt = statuses[i] === "weights_missing" ? "需下载权重" : "待实现"; }
+            statusHtml.push(`<div class="model-status-item"><span class="status-dot ${cls}"></span>${names[i]}: ${txt}</div>`);
+            document.getElementById(labels[i]).textContent = txt;
+        }
+        document.getElementById("modelStatus").innerHTML = statusHtml.join("");
+    } catch(e) { console.log("Status check failed"); }
+}
+
+async function predict() {
+    if (!selectedFile) { showToast("请先上传图片"); return; }
+    const btn = document.getElementById("countBtn");
+    const orig = btn.innerHTML;
+    btn.innerHTML = '<span class="spinner"></span> 正在计数...';
+    btn.disabled = true;
+    document.getElementById("errorMsg").style.display = "none";
+    document.getElementById("resultVis").style.display = "none";
+    try {
+        const fd = new FormData();
+        fd.append("image", selectedFile);
+        fd.append("model", document.getElementById("modelSelect").value);
+        fd.append("prompt", document.getElementById("promptInput").value || "leaf");
+        const res = await fetch("/api/predict", { method: "POST", body: fd });
+        const r = await res.json();
+        if (r.status === "error") throw new Error(r.error || "推理失败");
+        document.getElementById("resultCount").textContent = r.count !== null && r.count !== undefined ? r.count : "—";
+        document.getElementById("resultModel").textContent = "模型: " + (r.model || "—");
+        document.getElementById("resultTime").textContent = "耗时: " + (r.time_ms ? r.time_ms + "ms" : "—");
+        document.getElementById("resultPrompt").textContent = "提示: " + (r.prompt || "—");
+        if (r.vis) {
+            document.getElementById("resultVis").innerHTML = '<img src="data:image/png;base64,' + r.vis + '" alt="Density Map">';
+            document.getElementById("resultVis").style.display = "block";
+        }
+        if (r.status === "mock") showToast("提示: " + r.note + "，显示的是模拟数据");
+    } catch(e) {
+        document.getElementById("errorMsg").textContent = "错误: " + e.message;
+        document.getElementById("errorMsg").style.display = "block";
+    }
+    btn.innerHTML = orig;
+    btn.disabled = false;
+}
+
+function showToast(msg) {
+    const t = document.getElementById("toast"); t.textContent = msg; t.classList.add("show");
+    setTimeout(() => t.classList.remove("show"), 3000);
+}
+
+checkStatus();
+setInterval(checkStatus, 30000);
+</script>
+</body>
+</html>

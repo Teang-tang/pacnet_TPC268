@@ -1,0 +1,15 @@
+PACNet on TPC-268 (test split, 400 images)
+Backbone: ResNet-50 + FPN + Scale-Adaptive Heads + Local Refinement
+Model: Plant-Adaptive Counting Network (TasselNetV4+TasselNet inspired)
+==================================================
+MAE: 43.1895
+RMSE: 75.6293
+R2: -0.1403
+rMAE: 0.7312
+rRMSE: 1.2804
+Mean_GT: 59.0650
+Mean_Pred: 27.7422
+Samples: 400
+FLOPS: 19.9332
+Time_Per_Image: 0.1240
+Model: PACNet
