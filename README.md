@@ -584,7 +584,7 @@ L = L_density (MSE) + 0.1 × L_count (MAE) + 0.05 × L_local + 0.2 × L_patch
 | 第 3 周   | 模型评估（CLIP-Count、CountingDINO、CountGD） | 完成 |
 | 第 4-7 周 | 结果分析和模型改进（PACNet 设计实现+训练）      | 完成 |
 | 第 8 周   | 人机交互界面的制作（Flask Web 界面）              | 完成 |
-| 第 9 周   | 实验报告撰写和ppt制作、最终验收                    | 进行中 |
+| 第 9 周   | 报告撰写和ppt制作                            | 完成 |
 ---
 
 
