@@ -324,9 +324,6 @@ rMAE=0.39 与原始论文在 FSC-147 上的相对误差相当。
 
 ![CountingDINO 误差分布](results/countingdino/error_histogram.png)
 
-*图 5：CountingDINO 的预测误差分布直方图*
-
-![CountingDINO 错误案例](results/countingdino/error_case_examples.png)
 
 *图 6：CountingDINO 误差最大的 5 个案例可视化*
 
