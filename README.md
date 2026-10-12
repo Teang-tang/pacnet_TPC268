@@ -354,9 +354,6 @@ rMAE=0.39 与原始论文在 FSC-147 上的相对误差相当。
 
 ![CountGD 误差分布](results/countgd/error_histogram.png)
 
-*图 8：CountGD 的预测误差分布直方图*
-
-![CountGD 示例预测](results/countgd/example_predictions.png)
 
 *图 9：CountGD 的示例预测可视化*
 
